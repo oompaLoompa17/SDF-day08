@@ -16,24 +16,24 @@ public class ServerApp {
         BufferedWriter bw = new BufferedWriter(w);
         BaccaratEngine newGame = new BaccaratEngine();
         for (String s: newGame.newDecks(nuDecks)){
-            w.write(s);
-            w.write("\n");
+            bw.write(s +"\n");
         }
-        w.close();
+        bw.close();
 
         ServerSocket ssocket = new ServerSocket(port);
         Socket socket = ssocket.accept();
+        System.out.println("Socket connected!");
 
         InputStream is = socket.getInputStream();
         InputStreamReader isr = new InputStreamReader(is);
         BufferedReader br = new BufferedReader(isr);
         OutputStream os = socket.getOutputStream();
         OutputStreamWriter osw = new OutputStreamWriter(os);
-        bw = new BufferedWriter(osw);
+        BufferedWriter buw = new BufferedWriter(osw);
 
         while(true){
-            String[] request = br.readLine().toLowerCase().split("|");
-            
+            String[] request = br.readLine().toLowerCase().split("\\|");
+            System.out.println(Arrays.toString(request));
             String name = null;
             File f = null;
             FileWriter fw = null;
@@ -42,29 +42,36 @@ public class ServerApp {
             switch (request[0]){
                 
                 case "login":
-                name = request[1];
-                f = new File(name + ".db");
-                f.createNewFile();
-                fw = new FileWriter(f);
-                fw.write(request[2]);
-                fw.close();
+                    name = request[1];
+                    f = new File(name + ".db");
+                    System.out.printf(" File %s contains $%s", f, request[2]);
+                    f.createNewFile();
+                    fw = new FileWriter(f);
+                    fw.write(request[2]);
+                    fw.flush();
+                    fw.close();
                 break;
 
                 case "bet":
-                int betAmt = Integer.parseInt(request[1]);
-                fr = new FileReader(f);
-                char[] charBuffer = null;
-                if (betAmt > fr.read(charBuffer)){ //check if wallet can take betAmt
-                    System.err.printf("You're too poor! Current wallet value: $%s", Arrays.toString(charBuffer));
-                } else {
-                    int balance = Integer.parseInt(new String(charBuffer));
-                    balance -= betAmt;
-                    fw.write(balance);
-                    System.out.printf("New wallet balance: $%d", balance);
-                }
+                    int betAmt = Integer.parseInt(request[1]);
+                    fr = new FileReader(f);
+                    char[] charBuffer = null;
+                    if (betAmt > fr.read(charBuffer)){ //check if wallet can take betAmt
+                        System.err.printf("You're too poor! Current wallet value: $%s", Arrays.toString(charBuffer));
+                    } else {
+                        int balance = Integer.parseInt(new String(charBuffer));
+                        balance -= betAmt;
+                        fw.write(balance);
+                        System.out.printf("New wallet balance: $%d", balance);
+                    }
                 break;
 
                 case "deal":
+                
+                break;
+
+                case "exit":
+                    System.exit(1); 
                 break;
             }
         }

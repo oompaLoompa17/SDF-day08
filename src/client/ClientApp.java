@@ -23,10 +23,11 @@ public class ClientApp {
         Console console = System.console();
         
         while (true){
-            System.out.println("I await your next command, my liege\n");
+            System.out.println("I await your next command, my liege");
             String request = console.readLine().replace(" ", "|");
+            System.out.printf(request);
             bw.write(request);
-
+            bw.flush();
         }
 
     }
